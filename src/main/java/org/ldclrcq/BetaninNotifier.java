@@ -9,10 +9,24 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public record BetaninNotifier(String betaninUrl, String betaninApiKey, String betaninCompleteFolderPath) {
+    public void notifyBetanin(List<String> musicDirectories) throws URISyntaxException, IOException, InterruptedException {
+        System.out.println("Notifying betanin of new files...");
+        System.out.println("---------------------------------");
+
+        for (var musicDirectory : musicDirectories) {
+            notifyBetanin(musicDirectory);
+        }
+
+        System.out.println();
+    }
+
     public void notifyBetanin(String musicDirectory) throws URISyntaxException, IOException, InterruptedException {
+        System.out.println("Notifying betanin for directory : " + musicDirectory);
+
         HashMap<String, String> parameters = new HashMap<>();
         parameters.put("path", betaninCompleteFolderPath);
         parameters.put("name", musicDirectory);

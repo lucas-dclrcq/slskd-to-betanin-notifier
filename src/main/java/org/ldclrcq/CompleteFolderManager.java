@@ -11,10 +11,15 @@ import java.util.List;
 public record CompleteFolderManager(Path completeFolderPath) {
 
     public void clean() throws IOException {
+        System.out.println("Cleaning up complete directory...");
+        System.out.println("---------------------------------");
+
         try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(completeFolderPath)) {
             directoryStream.iterator()
                     .forEachRemaining(CompleteFolderManager::deleteIfNotContainingMusicFiles);
         }
+
+        System.out.println();
     }
 
     private static void deleteIfNotContainingMusicFiles(Path path) {
@@ -24,7 +29,10 @@ public record CompleteFolderManager(Path completeFolderPath) {
                     .anyMatch(CompleteFolderManager::isMusicFile);
 
             if (!containsMusic) {
+                System.out.println(path.toAbsolutePath() + " does not contain music: deleting");
                 deleteDirectory(path);
+            } else {
+                System.out.println(path.toAbsolutePath() + " contains music: skipping");
             }
 
         } catch (IOException e) {

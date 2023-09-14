@@ -21,14 +21,9 @@ public class Main {
         var completeFolderManager = new CompleteFolderManager(Path.of(localCompleteFolderPath));
         completeFolderManager.clean();
 
-        BetaninNotifier betaninNotifier = new BetaninNotifier(betaninUrl, betaninApiKey, betaninCompleteFolderPath);
-
+        var betaninNotifier = new BetaninNotifier(betaninUrl, betaninApiKey, betaninCompleteFolderPath);
         var directoriesContainingMusic = completeFolderManager.getSubDirectories();
-
-        for (var directory : directoriesContainingMusic) {
-            System.out.println("Notifying betanin for directory : " + directory);
-            betaninNotifier.notifyBetanin(directory);
-        }
+        betaninNotifier.notifyBetanin(directoriesContainingMusic);
 
         System.out.println("Done. Bye !");
     }

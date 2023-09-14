@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
@@ -19,7 +20,7 @@ public class BetaninNotifierTest {
         BetaninNotifier betaninNotifier = new BetaninNotifier("http://localhost:" + wireMockServer.port(), "abcd", "/mnt/complete");
 
         // ACT
-        betaninNotifier.notifyBetanin("test1");
+        betaninNotifier.notifyBetanin(List.of("test1"));
 
         // ASSERT
         verify(postRequestedFor(
