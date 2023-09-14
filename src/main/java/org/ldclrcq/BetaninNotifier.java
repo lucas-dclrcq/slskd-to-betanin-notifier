@@ -27,18 +27,18 @@ public record BetaninNotifier(String betaninUrl, String betaninApiKey, String be
     public void notifyBetanin(String musicDirectory) throws URISyntaxException, IOException, InterruptedException {
         System.out.println("Notifying betanin for directory : " + musicDirectory);
 
-        HashMap<String, String> parameters = new HashMap<>();
+        var parameters = new HashMap<String, String>();
         parameters.put("path", betaninCompleteFolderPath);
         parameters.put("name", musicDirectory);
 
-        String form = parameters.entrySet()
+        var form = parameters.entrySet()
                 .stream()
                 .map(e -> e.getKey() + "=" + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
                 .collect(Collectors.joining("&"));
 
-        URI endpoint = new URI(betaninUrl).resolve("/api/torrents");
+        var endpoint = new URI(betaninUrl).resolve("/api/torrents");
 
-        HttpRequest postRequest = HttpRequest.newBuilder()
+        var postRequest = HttpRequest.newBuilder()
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .header("X-API-Key", betaninApiKey)
                 .uri(endpoint).POST(HttpRequest.BodyPublishers.ofString(form))
