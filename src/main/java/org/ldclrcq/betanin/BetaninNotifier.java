@@ -1,4 +1,8 @@
-package org.ldclrcq;
+package org.ldclrcq.betanin;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ldclrcq.betanin.DTOs.BetaninTorrentDTO;
+import org.ldclrcq.betanin.DTOs.BetaninTorrentResponse;
 
 import java.io.IOException;
 import java.net.URI;
@@ -13,11 +17,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public record BetaninNotifier(String betaninUrl, String betaninApiKey, String betaninCompleteFolderPath) {
+    private final static String XApiKeyHeaderKey = "X-API-Key";
+
     public void notifyBetanin(List<String> musicDirectories) throws URISyntaxException, IOException, InterruptedException {
         System.out.println("Notifying betanin of new files...");
         System.out.println("---------------------------------");
 
+        var alreadyImportedDirectories = this.getAlreadyImportedDirectories();
+
         for (var musicDirectory : musicDirectories) {
+            if (alreadyImportedDirectories.contains(musicDirectory)) {
+                System.out.printf("Directory %s was already imported in betanin: skipping%n", musicDirectory);
+                continue;
+            }
+
             notifyBetanin(musicDirectory);
         }
 
@@ -25,7 +38,7 @@ public record BetaninNotifier(String betaninUrl, String betaninApiKey, String be
     }
 
     public void notifyBetanin(String musicDirectory) throws URISyntaxException, IOException, InterruptedException {
-        System.out.println("Notifying betanin for directory : " + musicDirectory);
+        System.out.printf("Notifying betanin for directory : %s%n", musicDirectory);
 
         var parameters = new HashMap<String, String>();
         parameters.put("path", betaninCompleteFolderPath);
@@ -40,12 +53,32 @@ public record BetaninNotifier(String betaninUrl, String betaninApiKey, String be
 
         var postRequest = HttpRequest.newBuilder()
                 .header("Content-Type", "application/x-www-form-urlencoded")
-                .header("X-API-Key", betaninApiKey)
+                .header(XApiKeyHeaderKey, betaninApiKey)
                 .uri(endpoint).POST(HttpRequest.BodyPublishers.ofString(form))
                 .build();
 
         HttpClient.newBuilder()
                 .build()
                 .send(postRequest, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private List<String> getAlreadyImportedDirectories() throws URISyntaxException, IOException, InterruptedException {
+        var endpoint = new URI(betaninUrl).resolve("/api/torrents?page=1&per_page=25");
+
+        var getRequest = HttpRequest.newBuilder()
+                .header(XApiKeyHeaderKey, betaninApiKey)
+                .uri(endpoint).GET()
+                .build();
+
+        var body = HttpClient.newBuilder()
+                .build()
+                .send(getRequest, HttpResponse.BodyHandlers.ofString())
+                .body();
+
+        var betaninTorrentResponse = new ObjectMapper().readValue(body, BetaninTorrentResponse.class);
+
+        System.out.printf("Fetched %d imported directories from betanin%n", betaninTorrentResponse.torrents().size());
+
+        return betaninTorrentResponse.torrents().stream().map(BetaninTorrentDTO::name).toList();
     }
 }

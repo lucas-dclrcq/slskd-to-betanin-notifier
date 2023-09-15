@@ -1,4 +1,4 @@
-package org.ldclrcq;
+package org.ldclrcq.complete_folder;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,10 +29,10 @@ public record CompleteFolderManager(Path completeFolderPath) {
                     .anyMatch(CompleteFolderManager::isMusicFile);
 
             if (!containsMusic) {
-                System.out.println(path.toAbsolutePath() + " does not contain music: deleting");
+                System.out.printf("%s does not contain music: deleting%n", path.toAbsolutePath());
                 deleteDirectory(path);
             } else {
-                System.out.println(path.toAbsolutePath() + " contains music: skipping");
+                System.out.printf("%s contains music: skipping%n", path.toAbsolutePath());
             }
 
         } catch (IOException e) {

@@ -2,6 +2,7 @@ package org.ldclrcq;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.ldclrcq.complete_folder.CompleteFolderManager;
 
 import java.io.IOException;
 import java.nio.file.Files;
