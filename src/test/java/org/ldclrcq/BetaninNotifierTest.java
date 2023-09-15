@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class BetaninNotifierTest {
     @Test
@@ -70,5 +71,38 @@ public class BetaninNotifierTest {
         // ASSERT
         verify(0, postRequestedFor(urlEqualTo("/api/torrents")));
         wireMockServer.stop();
+    }
+
+    @Test
+    void Given_two_directories_should_return_notified_one() throws URISyntaxException, IOException, InterruptedException {
+        // ARRANGE
+        WireMockServer wireMockServer = new WireMockServer();
+        wireMockServer.start();
+        stubFor(post(urlEqualTo("/api/torrents")).willReturn(aResponse().withStatus(200)));
+        stubFor(get(urlEqualTo("/api/torrents?page=1&per_page=25")).willReturn(aResponse().withStatus(200).withBody("""
+                {
+                    "total": 55,
+                    "torrents": [
+                        {
+                            "id": "56",
+                            "path": "/downloads",
+                            "status": "COMPLETED",
+                            "name": "test1",
+                            "has_lines": true,
+                            "tooltip": null,
+                            "updated": "2023-09-15T07:06:17",
+                            "created": "2023-09-15T07:00:03"
+                        }
+                    ]
+                }           
+                """)));
+
+        BetaninNotifier betaninNotifier = new BetaninNotifier("http://localhost:%d".formatted(wireMockServer.port()), "abcd", "/mnt/complete");
+
+        // ACT
+        List<String> notifiedDirectories = betaninNotifier.notifyBetanin(List.of("test1", "test2"));
+
+        // ASSERT
+        assertThat(notifiedDirectories).containsExactlyInAnyOrder("test2");
     }
 }

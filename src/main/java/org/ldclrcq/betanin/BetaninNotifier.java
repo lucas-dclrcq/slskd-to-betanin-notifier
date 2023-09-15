@@ -12,6 +12,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,11 +20,12 @@ import java.util.stream.Collectors;
 public record BetaninNotifier(String betaninUrl, String betaninApiKey, String betaninCompleteFolderPath) {
     private final static String XApiKeyHeaderKey = "X-API-Key";
 
-    public void notifyBetanin(List<String> musicDirectories) throws URISyntaxException, IOException, InterruptedException {
+    public List<String> notifyBetanin(List<String> musicDirectories) throws URISyntaxException, IOException, InterruptedException {
         System.out.println("Notifying betanin of new files...");
         System.out.println("---------------------------------");
 
         var alreadyImportedDirectories = this.getAlreadyImportedDirectories();
+        List<String> notifiedDirectories = new ArrayList<>();
 
         for (var musicDirectory : musicDirectories) {
             if (alreadyImportedDirectories.contains(musicDirectory)) {
@@ -32,9 +34,11 @@ public record BetaninNotifier(String betaninUrl, String betaninApiKey, String be
             }
 
             notifyBetanin(musicDirectory);
+            notifiedDirectories.add(musicDirectory);
         }
 
         System.out.println();
+        return notifiedDirectories;
     }
 
     public void notifyBetanin(String musicDirectory) throws URISyntaxException, IOException, InterruptedException {
