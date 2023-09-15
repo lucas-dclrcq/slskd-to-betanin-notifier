@@ -1,23 +1,36 @@
 package org.ldclrcq;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.ldclrcq.betanin.BetaninNotifier;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BetaninNotifierTest {
+
+    WireMockServer wireMockServer;
+
+    @BeforeEach
+    public void setup() {
+        wireMockServer = new WireMockServer();
+        wireMockServer.start();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        wireMockServer.stop();
+    }
+
     @Test
     void Given_directory_name_should_notify_betanin() throws URISyntaxException, IOException, InterruptedException {
         // ARRANGE
-        WireMockServer wireMockServer = new WireMockServer();
-        wireMockServer.start();
         stubFor(post(urlEqualTo("/api/torrents")).willReturn(aResponse().withStatus(200)));
         stubFor(get(urlEqualTo("/api/torrents?page=1&per_page=25")).willReturn(aResponse().withStatus(200).withBody("""
                 {
@@ -36,14 +49,11 @@ public class BetaninNotifierTest {
                 .withHeader("X-API-Key", equalTo("abcd"))
                 .withRequestBody(equalTo("path=%2Fmnt%2Fcomplete&name=test1"))
         );
-        wireMockServer.stop();
     }
 
     @Test
     void Given_already_notified_directory_should_not_notify_betanin() throws URISyntaxException, IOException, InterruptedException {
         // ARRANGE
-        WireMockServer wireMockServer = new WireMockServer();
-        wireMockServer.start();
         stubFor(post(urlEqualTo("/api/torrents")).willReturn(aResponse().withStatus(200)));
         stubFor(get(urlEqualTo("/api/torrents?page=1&per_page=25")).willReturn(aResponse().withStatus(200).withBody("""
                 {
@@ -70,14 +80,11 @@ public class BetaninNotifierTest {
 
         // ASSERT
         verify(0, postRequestedFor(urlEqualTo("/api/torrents")));
-        wireMockServer.stop();
     }
 
     @Test
     void Given_two_directories_should_return_notified_one() throws URISyntaxException, IOException, InterruptedException {
         // ARRANGE
-        WireMockServer wireMockServer = new WireMockServer();
-        wireMockServer.start();
         stubFor(post(urlEqualTo("/api/torrents")).willReturn(aResponse().withStatus(200)));
         stubFor(get(urlEqualTo("/api/torrents?page=1&per_page=25")).willReturn(aResponse().withStatus(200).withBody("""
                 {

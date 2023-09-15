@@ -2,6 +2,7 @@ package org.ldclrcq;
 
 import org.ldclrcq.betanin.BetaninNotifier;
 import org.ldclrcq.complete_folder.CompleteFolderManager;
+import org.ldclrcq.pushover.PushoverNotifier;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -18,15 +19,22 @@ public class Main {
         System.out.printf("Betanin api key: %s%n", betaninApiKey);
         String betaninCompleteFolderPath = args[3];
         System.out.printf("Betanin complete folder path: %s%n", betaninCompleteFolderPath);
-
+        String pushoverToken = args[4];
+        System.out.printf("Pushover: %s%n", pushoverToken);
+        String pushOverUser = args[5];
+        System.out.printf("Pushover user: %s%n", pushOverUser);
+        String pushoverDevice = args[6];
+        System.out.printf("Pushhover device id: %s%n", pushoverDevice);
         System.out.println("----------------\n");
 
         var completeFolderManager = new CompleteFolderManager(Path.of(localCompleteFolderPath));
-        completeFolderManager.clean();
-
         var betaninNotifier = new BetaninNotifier(betaninUrl, betaninApiKey, betaninCompleteFolderPath);
+        var pushoverNotifier = new PushoverNotifier("https://api.pushover.net", pushoverToken, pushOverUser, pushoverDevice);
+
+        completeFolderManager.clean();
         var directoriesContainingMusic = completeFolderManager.getSubDirectories();
-        betaninNotifier.notifyBetanin(directoriesContainingMusic);
+        var notifiedToBetaninDirectories = betaninNotifier.notifyBetanin(directoriesContainingMusic);
+        pushoverNotifier.notifyImportedDirectories(notifiedToBetaninDirectories);
 
         System.out.println("Done. Bye !");
     }
