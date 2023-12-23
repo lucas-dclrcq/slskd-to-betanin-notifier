@@ -24,11 +24,17 @@ public record BetaninNotifier(String betaninUrl, String betaninApiKey, String be
         System.out.println("Notifying betanin of new files...");
         System.out.println("---------------------------------");
 
-        var alreadyImportedDirectories = this.getAlreadyImportedDirectories();
+        List<BetaninTorrentDTO> alreadyImportedDirectories = this.getAlreadyImportedDirectories();
+
+        List<String> importedDirectoriesWithoutNeedingInput = this.removeNeedInputImports(alreadyImportedDirectories)
+                .stream()
+                .map(BetaninTorrentDTO::name)
+                .toList();
+
         List<String> notifiedDirectories = new ArrayList<>();
 
         for (var musicDirectory : musicDirectories) {
-            if (alreadyImportedDirectories.contains(musicDirectory)) {
+            if (importedDirectoriesWithoutNeedingInput.contains(musicDirectory)) {
                 System.out.printf("Directory %s was already imported in betanin: skipping%n", musicDirectory);
                 continue;
             }
@@ -39,6 +45,34 @@ public record BetaninNotifier(String betaninUrl, String betaninApiKey, String be
 
         System.out.println();
         return notifiedDirectories;
+    }
+
+    private List<BetaninTorrentDTO> removeNeedInputImports(List<BetaninTorrentDTO> alreadyImportedDirectories) throws IOException, URISyntaxException, InterruptedException {
+        List<BetaninTorrentDTO> importedDirectories = new ArrayList<>();
+
+        for (BetaninTorrentDTO alreadyImportedDirectory : alreadyImportedDirectories) {
+            if (alreadyImportedDirectory.status().equals("NEEDS_INPUT")) {
+                this.deleteImport(alreadyImportedDirectory.id());
+            } else {
+                importedDirectories.add(alreadyImportedDirectory);
+            }
+        }
+
+        return importedDirectories;
+    }
+
+    public void deleteImport(String id) throws IOException, InterruptedException, URISyntaxException {
+        var endpoint = new URI(betaninUrl).resolve("/api/torrents/").resolve(id);
+
+        var deleteRequest = HttpRequest.newBuilder()
+                .header(XApiKeyHeaderKey, betaninApiKey)
+                .uri(endpoint)
+                .DELETE()
+                .build();
+
+        HttpClient.newBuilder()
+                .build()
+                .send(deleteRequest, HttpResponse.BodyHandlers.ofString());
     }
 
     public void notifyBetanin(String musicDirectory) throws URISyntaxException, IOException, InterruptedException {
@@ -66,7 +100,7 @@ public record BetaninNotifier(String betaninUrl, String betaninApiKey, String be
                 .send(postRequest, HttpResponse.BodyHandlers.ofString());
     }
 
-    private List<String> getAlreadyImportedDirectories() throws URISyntaxException, IOException, InterruptedException {
+    private List<BetaninTorrentDTO> getAlreadyImportedDirectories() throws URISyntaxException, IOException, InterruptedException {
         var endpoint = new URI(betaninUrl).resolve("/api/torrents?page=1&per_page=25");
 
         var getRequest = HttpRequest.newBuilder()
@@ -83,6 +117,6 @@ public record BetaninNotifier(String betaninUrl, String betaninApiKey, String be
 
         System.out.printf("Fetched %d imported directories from betanin%n", betaninTorrentResponse.torrents().size());
 
-        return betaninTorrentResponse.torrents().stream().map(BetaninTorrentDTO::name).toList();
+        return betaninTorrentResponse.torrents();
     }
 }

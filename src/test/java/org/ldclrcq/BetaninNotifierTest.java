@@ -52,7 +52,7 @@ public class BetaninNotifierTest {
     }
 
     @Test
-    void Given_already_notified_directory_should_not_notify_betanin() throws URISyntaxException, IOException, InterruptedException {
+    void Given_already_completed_import_should_not_notify_betanin() throws URISyntaxException, IOException, InterruptedException {
         // ARRANGE
         stubFor(post(urlEqualTo("/api/torrents")).willReturn(aResponse().withStatus(200)));
         stubFor(get(urlEqualTo("/api/torrents?page=1&per_page=25")).willReturn(aResponse().withStatus(200).withBody("""
@@ -80,6 +80,45 @@ public class BetaninNotifierTest {
 
         // ASSERT
         verify(0, postRequestedFor(urlEqualTo("/api/torrents")));
+    }
+
+    @Test
+    void Given_waiting_for_input_import_should_remove_and_renotify() throws URISyntaxException, IOException, InterruptedException {
+        // ARRANGE
+        stubFor(post(urlEqualTo("/api/torrents")).willReturn(aResponse().withStatus(200)));
+        stubFor(get(urlEqualTo("/api/torrents?page=1&per_page=25")).willReturn(aResponse().withStatus(200).withBody("""
+                {
+                    "total": 55,
+                    "torrents": [
+                        {
+                            "id": "56",
+                            "path": "/downloads",
+                            "status": "NEEDS_INPUT",
+                            "name": "test1",
+                            "has_lines": true,
+                            "tooltip": null,
+                            "updated": "2023-09-15T07:06:17",
+                            "created": "2023-09-15T07:00:03"
+                        }
+                    ]
+                }          
+                """)));
+        stubFor(delete(urlEqualTo("/api/torrents/56")).willReturn(aResponse().withStatus(200)));
+
+        BetaninNotifier betaninNotifier = new BetaninNotifier("http://localhost:%d".formatted(wireMockServer.port()), "abcd", "/mnt/complete");
+
+        // ACT
+        betaninNotifier.notifyBetanin(List.of("test1"));
+
+        // ASSERT
+        verify(deleteRequestedFor(
+                        urlEqualTo("/api/torrents/56"))
+                        .withHeader("X-API-Key", equalTo("abcd")));
+        verify(postRequestedFor(
+                urlEqualTo("/api/torrents"))
+                .withHeader("X-API-Key", equalTo("abcd"))
+                .withRequestBody(equalTo("path=%2Fmnt%2Fcomplete&name=test1"))
+        );
     }
 
     @Test
