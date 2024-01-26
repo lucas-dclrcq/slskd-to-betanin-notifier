@@ -32,7 +32,7 @@ public record PushoverNotifier(String pushoverBaseUrl, String pushoverToken, Str
         parameters.put("user", pushoverUser);
         parameters.put("device", pushoverDevice);
         parameters.put("title", "New music imported: %s".formatted(importedDirectory));
-        parameters.put("message", "A music directory was successfully imported in betanin: %s".formatted(importedDirectory));
+        parameters.put("message", "A music directory was successfully notified to betanin: %s".formatted(importedDirectory));
 
         var form = parameters.entrySet()
                 .stream()

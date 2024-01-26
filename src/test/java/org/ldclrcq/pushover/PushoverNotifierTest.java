@@ -39,7 +39,7 @@ public class PushoverNotifierTest {
         // ASSERT
         verify(postRequestedFor(
                 urlEqualTo("/1/messages.json"))
-                .withRequestBody(equalTo("title=New+music+imported%3A+%5BTest%5D+Machin&message=A+music+directory+was+successfully+imported+in+betanin%3A+%5BTest%5D+Machin&user=someUser&device=someDevice&token=someToken"))
+                .withRequestBody(equalTo("title=New+music+imported%3A+%5BTest%5D+Machin&message=A+music+directory+was+successfully+notified+to+betanin%3A+%5BTest%5D+Machin&user=someUser&device=someDevice&token=someToken"))
         );
     }
 }
