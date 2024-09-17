@@ -1,5 +1,8 @@
 package org.ldclrcq.pushover;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -13,19 +16,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public record PushoverNotifier(String pushoverBaseUrl, String pushoverToken, String pushoverUser, String pushoverDevice) {
+    private static final Logger logger = LogManager.getLogger();
+
     public void notifyImportedDirectories(List<String> importedDirectories) throws URISyntaxException, IOException, InterruptedException {
-        System.out.println("Notifying pushover of imported directories...");
-        System.out.println("---------------------------------");
+        logger.info("Notifying pushover of imported directories...");
+        logger.info("---------------------------------");
 
         for (String importedDirectory : importedDirectories) {
             notifyImportedDirectory(importedDirectory);
         }
 
-        System.out.println();
     }
 
     private void notifyImportedDirectory(String importedDirectory) throws URISyntaxException, IOException, InterruptedException {
-        System.out.printf("Notifying pushover for directory : %s%n", importedDirectory);
+        logger.info("Notifying pushover for directory : {}", importedDirectory);
 
         var parameters = new HashMap<String, String>();
         parameters.put("token", pushoverToken);
