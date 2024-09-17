@@ -36,7 +36,7 @@ public class BetaninNotifierTest {
                 {
                     "total": 55,
                     "torrents": []
-                }           
+                }
                 """)));
         BetaninNotifier betaninNotifier = new BetaninNotifier("http://localhost:" + wireMockServer.port(), "abcd", "/mnt/complete");
 

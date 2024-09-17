@@ -11,19 +11,19 @@ import java.nio.file.Path;
 public class Main {
     public static void main(String[] args) throws IOException, URISyntaxException, InterruptedException {
         System.out.println("Starting SLSKD to Betanin notifier\n");
-        String localCompleteFolderPath = args[0];
+        String localCompleteFolderPath = System.getenv("SLSKD_COMPLETE_FOLDER_PATH");
         System.out.printf("Complete folder path: %s%n", localCompleteFolderPath);
-        String betaninUrl = args[1];
+        String betaninUrl = System.getenv("SLSKD_BETANIN_URL");
         System.out.printf("Betanin url: %s%n", betaninUrl);
-        String betaninApiKey = args[2];
+        String betaninApiKey = System.getenv("SLSKD_BETANIN_API_KEY");
         System.out.printf("Betanin api key: %s%n", betaninApiKey);
-        String betaninCompleteFolderPath = args[3];
+        String betaninCompleteFolderPath = System.getenv("SLSKD_BETANIN_COMPLETE_FOLDER_PATH");
         System.out.printf("Betanin complete folder path: %s%n", betaninCompleteFolderPath);
-        String pushoverToken = args[4];
+        String pushoverToken = System.getenv("SLSKD_PUSHOVER_TOKEN");
         System.out.printf("Pushover: %s%n", pushoverToken);
-        String pushOverUser = args[5];
+        String pushOverUser = System.getenv("SLSKD_PUSHOVER_USER");
         System.out.printf("Pushover user: %s%n", pushOverUser);
-        String pushoverDevice = args[6];
+        String pushoverDevice = System.getenv("SLSKD_PUSHOVER_DEVICE");
         System.out.printf("Pushhover device id: %s%n", pushoverDevice);
         System.out.println("----------------\n");
 

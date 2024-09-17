@@ -89,7 +89,5 @@ public class CompleteFolderManagerTest {
         // ASSERT
         assertThat(subDirectories).containsExactlyInAnyOrder("test1", "test2", "test3");
     }
-
-
 }
 
