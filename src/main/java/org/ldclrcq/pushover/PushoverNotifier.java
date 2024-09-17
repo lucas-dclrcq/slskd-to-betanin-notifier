@@ -46,8 +46,8 @@ public record PushoverNotifier(String pushoverBaseUrl, String pushoverToken, Str
                 .uri(endpoint).POST(HttpRequest.BodyPublishers.ofString(form))
                 .build();
 
-        HttpClient.newBuilder()
-                .build()
-                .send(postRequest, HttpResponse.BodyHandlers.ofString());
+        try (var httpclient = HttpClient.newBuilder().build()) {
+            httpclient.send(postRequest, HttpResponse.BodyHandlers.ofString());
+        }
     }
 }

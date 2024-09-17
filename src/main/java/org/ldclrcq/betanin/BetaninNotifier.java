@@ -70,9 +70,9 @@ public record BetaninNotifier(String betaninUrl, String betaninApiKey, String be
                 .DELETE()
                 .build();
 
-        HttpClient.newBuilder()
-                .build()
-                .send(deleteRequest, HttpResponse.BodyHandlers.ofString());
+        try (var httpclient = HttpClient.newBuilder().build()) {
+            httpclient.send(deleteRequest, HttpResponse.BodyHandlers.ofString());
+        }
     }
 
     public void notifyBetanin(String musicDirectory) throws URISyntaxException, IOException, InterruptedException {
@@ -95,9 +95,9 @@ public record BetaninNotifier(String betaninUrl, String betaninApiKey, String be
                 .uri(endpoint).POST(HttpRequest.BodyPublishers.ofString(form))
                 .build();
 
-        HttpClient.newBuilder()
-                .build()
-                .send(postRequest, HttpResponse.BodyHandlers.ofString());
+        try (var httpclient = HttpClient.newBuilder().build()) {
+            httpclient.send(postRequest, HttpResponse.BodyHandlers.ofString());
+        }
     }
 
     private List<BetaninTorrentDTO> getAlreadyImportedDirectories() throws URISyntaxException, IOException, InterruptedException {
@@ -108,15 +108,13 @@ public record BetaninNotifier(String betaninUrl, String betaninApiKey, String be
                 .uri(endpoint).GET()
                 .build();
 
-        var body = HttpClient.newBuilder()
-                .build()
-                .send(getRequest, HttpResponse.BodyHandlers.ofString())
-                .body();
+        try (var httpclient = HttpClient.newBuilder().build()) {
+            String body = httpclient.send(getRequest, HttpResponse.BodyHandlers.ofString()).body();
+            var betaninTorrentResponse = new ObjectMapper().readValue(body, BetaninTorrentResponse.class);
 
-        var betaninTorrentResponse = new ObjectMapper().readValue(body, BetaninTorrentResponse.class);
+            System.out.printf("Fetched %d imported directories from betanin%n", betaninTorrentResponse.torrents().size());
 
-        System.out.printf("Fetched %d imported directories from betanin%n", betaninTorrentResponse.torrents().size());
-
-        return betaninTorrentResponse.torrents();
+            return betaninTorrentResponse.torrents();
+        }
     }
 }
